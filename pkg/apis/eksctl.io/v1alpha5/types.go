@@ -2,6 +2,7 @@ package v1alpha5
 
 import (
 	"fmt"
+	"os"
 	"strings"
 	"time"
 
@@ -14,6 +15,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/iam/iamiface"
 	"github.com/aws/aws-sdk-go/service/ssm/ssmiface"
 	"github.com/aws/aws-sdk-go/service/sts/stsiface"
+	"github.com/pkg/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 )
@@ -137,15 +139,23 @@ const (
 	// RegionUSGovEast1 represents the region GovCloud (US-East)
 	RegionUSGovEast1 = "us-gov-east-1"
 
+	// RegionUSIsoEast1 represents the region ISO (US-East)
+	RegionUSIsoEast1 = "us-iso-east-1"
+
+	// RegionUSIsobEast1 represents the region ISOB (US-East)
+	RegionUSIsobEast1 = "us-isob-east-1"
+
 	// DefaultRegion defines the default region, where to deploy the EKS cluster
 	DefaultRegion = RegionUSWest2
 )
 
 // Partitions
 const (
-	PartitionAWS   = "aws"
-	PartitionChina = "aws-cn"
-	PartitionUSGov = "aws-us-gov"
+	PartitionAWS    = "aws"
+	PartitionChina  = "aws-cn"
+	PartitionUSGov  = "aws-us-gov"
+	PartitionUSIso  = "aws-iso"
+	PartitionUSIsob = "aws-iso-b"
 )
 
 // Values for `NodeAMIFamily`
@@ -330,6 +340,8 @@ func SupportedRegions() []string {
 		RegionCNNorth1,
 		RegionUSGovWest1,
 		RegionUSGovEast1,
+		RegionUSIsoEast1,
+		RegionUSIsobEast1,
 	}
 }
 
@@ -338,6 +350,10 @@ func Partition(region string) string {
 	switch region {
 	case RegionUSGovWest1, RegionUSGovEast1:
 		return PartitionUSGov
+	case RegionUSIsoEast1:
+		return PartitionUSIso
+	case RegionUSIsobEast1:
+		return PartitionUSIsob
 	case RegionCNNorth1, RegionCNNorthwest1:
 		return PartitionChina
 	default:
@@ -418,7 +434,27 @@ func isSpotAllocationStrategySupported(allocationStrategy string) bool {
 
 // EKSResourceAccountID provides worker node resources(ami/ecr image) in different aws account
 // for different aws partitions & opt-in regions.
-func EKSResourceAccountID(region string) string {
+func EKSResourceAccountID(region string) (string, error) {
+	switch region {
+	case RegionUSIsoEast1:
+		return isoResourceAccountID(region, "ISO_EAST1_ACCOUNT_ID")
+	case RegionUSIsobEast1:
+		return isoResourceAccountID(region, "ISO_B_EAST1_ACCOUNT_ID")
+	default:
+		return publicResourceAccountID(region), nil
+	}
+}
+
+func isoResourceAccountID(region, varName string) (string, error) {
+	id, ok := os.LookupEnv(varName)
+	if !ok {
+		return "", errors.Errorf("%s not set, required for use of region: %s", varName, region)
+	}
+
+	return id, nil
+}
+
+func publicResourceAccountID(region string) string {
 	switch region {
 	case RegionAPEast1:
 		return eksResourceAccountAPEast1

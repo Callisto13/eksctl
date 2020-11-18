@@ -25,12 +25,17 @@ func makeAmazonLinux2Config(spec *api.ClusterConfig, ng *api.NodeGroup) (configF
 		return nil, err
 	}
 
+	metadata, err := makeMetadata(spec)
+	if err != nil {
+		return nil, err
+	}
+
 	files := configFiles{
 		kubeletDropInUnitDir: {
 			"10-eksclt.al2.conf": {isAsset: true},
 		},
 		configDir: {
-			"metadata.env": {content: strings.Join(makeMetadata(spec), "\n")},
+			"metadata.env": {content: strings.Join(metadata, "\n")},
 			"kubelet.env":  {content: strings.Join(makeCommonKubeletEnvParams(ng), "\n")},
 			"kubelet.yaml": {content: string(kubeletConfigData)},
 			// TODO: https://github.com/weaveworks/eksctl/issues/161

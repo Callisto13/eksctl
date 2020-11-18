@@ -42,9 +42,14 @@ func makeUbuntuConfig(spec *api.ClusterConfig, ng *api.NodeGroup) (configFiles, 
 		return nil, err
 	}
 
+	metadata, err := makeMetadata(spec)
+	if err != nil {
+		return nil, err
+	}
+
 	files := configFiles{
 		configDir: {
-			"metadata.env": {content: strings.Join(makeMetadata(spec), "\n")},
+			"metadata.env": {content: strings.Join(metadata, "\n")},
 			"kubelet.env":  {content: strings.Join(kubeletEnvParams, "\n")},
 			"kubelet.yaml": {content: string(kubeletConfigData)},
 			// TODO: https://github.com/weaveworks/eksctl/issues/161
