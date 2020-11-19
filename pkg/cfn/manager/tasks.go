@@ -160,11 +160,12 @@ type nodeGroupTask struct {
 	supportsManagedNodes bool
 	forceAddCNIPolicy    bool
 	stackCollection      *StackCollection
+	accountID            string
 }
 
 func (t *nodeGroupTask) Describe() string { return t.info }
 func (t *nodeGroupTask) Do(errs chan error) error {
-	return t.stackCollection.createNodeGroupTask(errs, t.nodeGroup, t.supportsManagedNodes, t.forceAddCNIPolicy)
+	return t.stackCollection.createNodeGroupTask(errs, t.nodeGroup, t.supportsManagedNodes, t.forceAddCNIPolicy, t.accountID)
 }
 
 type managedNodeGroupTask struct {

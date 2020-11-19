@@ -257,7 +257,6 @@ func (c *ClusterProvider) GetCredentialsEnv() ([]string, error) {
 
 // CheckAuth checks the AWS authentication
 func (c *ClusterProvider) CheckAuth() error {
-
 	input := &sts.GetCallerIdentityInput{}
 	output, err := c.Provider.STS().GetCallerIdentity(input)
 	if err != nil {
@@ -272,11 +271,11 @@ func (c *ClusterProvider) CheckAuth() error {
 }
 
 // ResolveAMI ensures that the node AMI is set and is available
-func ResolveAMI(provider api.ClusterProvider, version string, ng *api.NodeGroup) error {
+func ResolveAMI(provider api.ClusterProvider, version, accountID string, ng *api.NodeGroup) error {
 	var resolver ami.Resolver
 	switch ng.AMI {
 	case api.NodeImageResolverAuto:
-		resolver = ami.NewAutoResolver(provider.EC2())
+		resolver = ami.NewAutoResolver(provider.EC2(), accountID)
 	case api.NodeImageResolverAutoSSM:
 		resolver = ami.NewSSMResolver(provider.SSM())
 	case api.NodeImageResolverStatic:
@@ -285,7 +284,7 @@ func ResolveAMI(provider api.ClusterProvider, version string, ng *api.NodeGroup)
 	default:
 		resolver = ami.NewMultiResolver(
 			ami.NewSSMResolver(provider.SSM()),
-			ami.NewAutoResolver(provider.EC2()),
+			ami.NewAutoResolver(provider.EC2(), accountID),
 		)
 	}
 

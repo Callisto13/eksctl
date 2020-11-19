@@ -10,7 +10,7 @@ import (
 	"github.com/weaveworks/eksctl/pkg/utils/kubeconfig"
 )
 
-func makeAmazonLinux2Config(spec *api.ClusterConfig, ng *api.NodeGroup) (configFiles, error) {
+func makeAmazonLinux2Config(spec *api.ClusterConfig, ng *api.NodeGroup, accountID string) (configFiles, error) {
 	clientConfigData, err := makeClientConfigData(spec, kubeconfig.AWSEKSAuthenticator)
 	if err != nil {
 		return nil, err
@@ -30,7 +30,7 @@ func makeAmazonLinux2Config(spec *api.ClusterConfig, ng *api.NodeGroup) (configF
 			"10-eksclt.al2.conf": {isAsset: true},
 		},
 		configDir: {
-			"metadata.env": {content: strings.Join(makeMetadata(spec), "\n")},
+			"metadata.env": {content: strings.Join(makeMetadata(spec, accountID), "\n")},
 			"kubelet.env":  {content: strings.Join(makeCommonKubeletEnvParams(ng), "\n")},
 			"kubelet.yaml": {content: string(kubeletConfigData)},
 			// TODO: https://github.com/weaveworks/eksctl/issues/161
@@ -44,10 +44,10 @@ func makeAmazonLinux2Config(spec *api.ClusterConfig, ng *api.NodeGroup) (configF
 }
 
 // NewUserDataForAmazonLinux2 creates new user data for Amazon Linux 2 nodes
-func NewUserDataForAmazonLinux2(spec *api.ClusterConfig, ng *api.NodeGroup) (string, error) {
+func NewUserDataForAmazonLinux2(spec *api.ClusterConfig, ng *api.NodeGroup, accountID string) (string, error) {
 	config := cloudconfig.New()
 
-	files, err := makeAmazonLinux2Config(spec, ng)
+	files, err := makeAmazonLinux2Config(spec, ng, accountID)
 	if err != nil {
 		return "", err
 	}

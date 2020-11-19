@@ -25,6 +25,7 @@ func createNodeGroupCmd(cmd *cmdutils.Cmd) {
 		if err != nil {
 			return errors.Wrap(err, "couldn't create cluster provider from command line options")
 		}
+		// CLAUDIA - will be used (fetch)
 		c, err := create.NewNodeGroup(
 			*cmd.ClusterConfig,
 			*ngFilter,
@@ -34,7 +35,12 @@ func createNodeGroupCmd(cmd *cmdutils.Cmd) {
 		if err != nil {
 			return errors.Wrap(err, "couldn't create create node group action from command line options")
 		}
-		return c.Create()
+		region := &cmd.ClusterConfig.Metadata.Region
+		accountID, err := api.ResourceAccountID(*region)
+		if err != nil {
+			return err
+		}
+		return c.Create(accountID)
 	})
 }
 

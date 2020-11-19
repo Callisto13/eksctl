@@ -55,8 +55,8 @@ func NewMultiResolver(delegates ...Resolver) *MultiResolver {
 }
 
 // NewAutoResolver creates a new AutoResolver
-func NewAutoResolver(api ec2iface.EC2API) Resolver {
-	return &AutoResolver{api: api}
+func NewAutoResolver(api ec2iface.EC2API, accountID string) Resolver {
+	return &AutoResolver{api: api, accountID: accountID}
 }
 
 // NewSSMResolver creates a new AutoResolver.

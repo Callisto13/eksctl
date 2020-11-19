@@ -13,7 +13,7 @@ import (
 
 const ubuntu2004ResolveConfPath = "/run/systemd/resolve/resolv.conf"
 
-func makeUbuntuConfig(spec *api.ClusterConfig, ng *api.NodeGroup) (configFiles, error) {
+func makeUbuntuConfig(spec *api.ClusterConfig, ng *api.NodeGroup, accountID string) (configFiles, error) {
 	clientConfigData, err := makeClientConfigData(spec, kubeconfig.HeptioAuthenticatorAWS)
 	if err != nil {
 		return nil, err
@@ -44,7 +44,7 @@ func makeUbuntuConfig(spec *api.ClusterConfig, ng *api.NodeGroup) (configFiles, 
 
 	files := configFiles{
 		configDir: {
-			"metadata.env": {content: strings.Join(makeMetadata(spec), "\n")},
+			"metadata.env": {content: strings.Join(makeMetadata(spec, accountID), "\n")},
 			"kubelet.env":  {content: strings.Join(kubeletEnvParams, "\n")},
 			"kubelet.yaml": {content: string(kubeletConfigData)},
 			// TODO: https://github.com/weaveworks/eksctl/issues/161
@@ -58,10 +58,10 @@ func makeUbuntuConfig(spec *api.ClusterConfig, ng *api.NodeGroup) (configFiles, 
 }
 
 // NewUserDataForUbuntu creates new user data for Ubuntu 18.04 & 20.04 nodes
-func NewUserDataForUbuntu(spec *api.ClusterConfig, ng *api.NodeGroup) (string, error) {
+func NewUserDataForUbuntu(spec *api.ClusterConfig, ng *api.NodeGroup, accountID string) (string, error) {
 	config := cloudconfig.New()
 
-	files, err := makeUbuntuConfig(spec, ng)
+	files, err := makeUbuntuConfig(spec, ng, accountID)
 	if err != nil {
 		return "", err
 	}

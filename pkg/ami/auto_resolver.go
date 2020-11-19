@@ -10,14 +10,6 @@ import (
 	"github.com/weaveworks/eksctl/pkg/utils"
 )
 
-const (
-	// ownerIDUbuntuFamily is the owner ID used for Ubuntu AMIs
-	ownerIDUbuntuFamily = "099720109477"
-
-	// ownerIDWindowsFamily is the owner ID used for Ubuntu AMIs
-	ownerIDWindowsFamily = "801119661308"
-)
-
 // MakeImageSearchPatterns creates a map of image search patterns by image OS family and class
 func MakeImageSearchPatterns(version string) map[string]map[int]string {
 	return map[string]map[int]string{
@@ -47,25 +39,11 @@ func MakeImageSearchPatterns(version string) map[string]map[int]string {
 	}
 }
 
-// OwnerAccountID returns the AWS account ID that owns worker AMI.
-func OwnerAccountID(imageFamily, region string) (string, error) {
-	switch imageFamily {
-	case api.NodeImageFamilyUbuntu2004, api.NodeImageFamilyUbuntu1804:
-		return ownerIDUbuntuFamily, nil
-	case api.NodeImageFamilyAmazonLinux2:
-		return api.EKSResourceAccountID(region), nil
-	default:
-		if api.IsWindowsImage(imageFamily) {
-			return ownerIDWindowsFamily, nil
-		}
-		return "", fmt.Errorf("unable to determine the account owner for image family %s", imageFamily)
-	}
-}
-
 // AutoResolver resolves the AMi to the defaults for the region
 // by querying AWS EC2 API for the AMI to use
 type AutoResolver struct {
-	api ec2iface.EC2API
+	api       ec2iface.EC2API
+	accountID string
 }
 
 // Resolve will return an AMI to use based on the default AMI for
@@ -93,10 +71,14 @@ func (r *AutoResolver) Resolve(region, version, instanceType, imageFamily string
 		}
 	}
 
-	ownerAccount, err := OwnerAccountID(imageFamily, region)
-	if err != nil {
-		logger.Critical("%v", err)
-		return "", NewErrFailedResolution(region, version, instanceType, imageFamily)
+	ownerAccount := r.accountID
+	if imageFamily != api.NodeImageFamilyAmazonLinux2 {
+		var err error
+		ownerAccount, err = api.OwnerAccountID(imageFamily, region)
+		if err != nil {
+			logger.Critical("%v", err)
+			return "", NewErrFailedResolution(region, version, instanceType, imageFamily)
+		}
 	}
 
 	id, err := FindImage(r.api, ownerAccount, namePattern)

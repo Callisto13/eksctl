@@ -39,6 +39,7 @@ type vpcControllerTask struct {
 	info            string
 	clusterProvider *ClusterProvider
 	spec            *api.ClusterConfig
+	accountID       string
 }
 
 func (v *vpcControllerTask) Describe() string { return v.info }
@@ -49,7 +50,7 @@ func (v *vpcControllerTask) Do(errCh chan error) error {
 	if err != nil {
 		return err
 	}
-	vpcController := addons.NewVPCController(rawClient, v.spec.Status, v.clusterProvider.Provider.Region(), false)
+	vpcController := addons.NewVPCController(rawClient, v.spec.Status, v.clusterProvider.Provider.Region(), v.accountID, false)
 	if err := vpcController.Deploy(); err != nil {
 		return errors.Wrap(err, "error installing VPC controller")
 	}
@@ -111,6 +112,7 @@ type UpdateAddonsTask struct {
 	info            string
 	clusterProvider *ClusterProvider
 	spec            *api.ClusterConfig
+	accountID       string
 }
 
 func (t *UpdateAddonsTask) Describe() string { return t.info }
@@ -129,7 +131,7 @@ func (t *UpdateAddonsTask) Do(errCh chan error) error {
 	if err != nil {
 		return err
 	}
-	err = defaultaddons.EnsureAddonsUpToDate(clientSet, rawClient, kubernetesVersion, t.clusterProvider.Provider.Region())
+	err = defaultaddons.EnsureAddonsUpToDate(clientSet, rawClient, kubernetesVersion, t.clusterProvider.Provider.Region(), t.accountID)
 	if err != nil {
 		return err
 	}
@@ -174,7 +176,7 @@ func (t *restartDaemonsetTask) Do(errCh chan error) error {
 }
 
 // CreateExtraClusterConfigTasks returns all tasks for updating cluster configuration not depending on the control plane availability
-func (c *ClusterProvider) CreateExtraClusterConfigTasks(cfg *api.ClusterConfig, installVPCController bool) *manager.TaskTree {
+func (c *ClusterProvider) CreateExtraClusterConfigTasks(cfg *api.ClusterConfig, installVPCController bool, accountID string) *manager.TaskTree {
 	newTasks := &manager.TaskTree{
 		Parallel:  false,
 		IsSubTask: true,
@@ -208,10 +210,12 @@ func (c *ClusterProvider) CreateExtraClusterConfigTasks(cfg *api.ClusterConfig, 
 	}
 
 	if installVPCController {
+		// CLAUDIA
 		newTasks.Append(&vpcControllerTask{
 			info:            "install Windows VPC controller",
 			spec:            cfg,
 			clusterProvider: c,
+			accountID:       accountID,
 		})
 	}
 
@@ -224,10 +228,12 @@ func (c *ClusterProvider) CreateExtraClusterConfigTasks(cfg *api.ClusterConfig, 
 	}
 
 	if api.ClusterHasInstanceType(cfg, utils.IsARMInstanceType) {
+		// CLAUDIA
 		newTasks.Append(&UpdateAddonsTask{
 			info:            "update default addons",
 			clusterProvider: c,
 			spec:            cfg,
+			accountID:       accountID,
 		})
 	}
 

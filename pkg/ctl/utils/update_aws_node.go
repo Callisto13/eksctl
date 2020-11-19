@@ -17,6 +17,7 @@ func updateAWSNodeCmd(cmd *cmdutils.Cmd) {
 
 	cmd.CobraCommand.RunE = func(_ *cobra.Command, args []string) error {
 		cmd.NameArg = cmdutils.GetNameArg(args)
+		// CLAUDIA - will be used (fetch)
 		return doUpdateAWSNode(cmd)
 	}
 
@@ -58,7 +59,11 @@ func doUpdateAWSNode(cmd *cmdutils.Cmd) error {
 		return err
 	}
 
-	updateRequired, err := defaultaddons.UpdateAWSNode(rawClient, meta.Region, cmd.Plan)
+	accountID, err := api.ResourceAccountID(meta.Region)
+	if err != nil {
+		return err
+	}
+	updateRequired, err := defaultaddons.UpdateAWSNode(rawClient, meta.Region, accountID, cmd.Plan)
 	if err != nil {
 		return err
 	}

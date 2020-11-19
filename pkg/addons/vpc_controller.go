@@ -29,12 +29,13 @@ const (
 )
 
 // NewVPCController creates a new VPCController
-func NewVPCController(rawClient kubernetes.RawClientInterface, clusterStatus *api.ClusterStatus, region string, planMode bool) *VPCController {
+func NewVPCController(rawClient kubernetes.RawClientInterface, clusterStatus *api.ClusterStatus, region, accountID string, planMode bool) *VPCController {
 	return &VPCController{
 		rawClient:     rawClient,
 		clusterStatus: clusterStatus,
 		region:        region,
 		planMode:      planMode,
+		accountID:     accountID,
 	}
 }
 
@@ -44,6 +45,7 @@ type VPCController struct {
 	clusterStatus *api.ClusterStatus
 	region        string
 	planMode      bool
+	accountID     string
 }
 
 // Deploy deploys VPC controller to the specified cluster
@@ -285,7 +287,7 @@ func (v *VPCController) applyDeployment(manifests []byte) error {
 	if !ok {
 		return &typeAssertionError{&appsv1.Deployment{}, rawExtension.Object}
 	}
-	if err := UseRegionalImage(&deployment.Spec.Template, v.region); err != nil {
+	if err := UseRegionalImage(&deployment.Spec.Template, v.region, v.accountID); err != nil {
 		return err
 	}
 	return v.applyRawResource(rawExtension.Object)

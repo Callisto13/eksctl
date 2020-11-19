@@ -5,7 +5,6 @@ import (
 	"strings"
 
 	"github.com/aws/aws-sdk-go/aws/endpoints"
-	api "github.com/weaveworks/eksctl/pkg/apis/eksctl.io/v1alpha5"
 	corev1 "k8s.io/api/core/v1"
 )
 
@@ -21,18 +20,19 @@ func awsDNSSuffixForRegion(region string) (string, error) {
 
 // UseRegionalImage sets the region and AWS DNS suffix for a container image
 // in format '%s.dkr.ecr.%s.%s/image:tag'
-func UseRegionalImage(spec *corev1.PodTemplateSpec, region string) error {
+func UseRegionalImage(spec *corev1.PodTemplateSpec, region, accountID string) error {
 	imageFormat := spec.Spec.Containers[0].Image
 	dnsSuffix, err := awsDNSSuffixForRegion(region)
 	if err != nil {
 		return err
 	}
-	regionalImage := fmt.Sprintf(imageFormat, api.EKSResourceAccountID(region), region, dnsSuffix)
+
+	regionalImage := fmt.Sprintf(imageFormat, accountID, region, dnsSuffix)
 	spec.Spec.Containers[0].Image = regionalImage
 
 	if len(spec.Spec.InitContainers) > 0 {
 		imageFormat = spec.Spec.InitContainers[0].Image
-		regionalImage = fmt.Sprintf(imageFormat, api.EKSResourceAccountID(region), region, dnsSuffix)
+		regionalImage = fmt.Sprintf(imageFormat, accountID, region, dnsSuffix)
 		spec.Spec.InitContainers[0].Image = regionalImage
 	}
 	return nil

@@ -26,6 +26,7 @@ type NodeGroupResourceSet struct {
 	forceAddCNIPolicy    bool
 	provider             api.ClusterProvider
 	clusterStackName     string
+	accountID            string
 	instanceProfileARN   *gfnt.Value
 	securityGroups       []*gfnt.Value
 	vpc                  *gfnt.Value
@@ -33,11 +34,12 @@ type NodeGroupResourceSet struct {
 }
 
 // NewNodeGroupResourceSet returns a resource set for a nodegroup embedded in a cluster config
-func NewNodeGroupResourceSet(provider api.ClusterProvider, spec *api.ClusterConfig, clusterStackName string, ng *api.NodeGroup,
+func NewNodeGroupResourceSet(provider api.ClusterProvider, spec *api.ClusterConfig, clusterStackName, accountID string, ng *api.NodeGroup,
 	supportsManagedNodes, forceAddCNIPolicy bool) *NodeGroupResourceSet {
 	return &NodeGroupResourceSet{
 		rs:                   newResourceSet(),
 		clusterStackName:     clusterStackName,
+		accountID:            accountID,
 		supportsManagedNodes: supportsManagedNodes,
 		forceAddCNIPolicy:    forceAddCNIPolicy,
 		clusterSpec:          spec,
@@ -62,7 +64,7 @@ func (n *NodeGroupResourceSet) AddAllResources() error {
 
 	n.vpc = makeImportValue(n.clusterStackName, outputs.ClusterVPC)
 
-	userData, err := nodebootstrap.NewUserData(n.clusterSpec, n.spec)
+	userData, err := nodebootstrap.NewUserData(n.clusterSpec, n.spec, n.accountID)
 	if err != nil {
 		return err
 	}

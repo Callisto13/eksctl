@@ -48,7 +48,7 @@ func NewNodeGroup(
 	}, nil
 }
 
-func (c *NodeGroup) Create() error {
+func (c *NodeGroup) Create(accountID string) error {
 	cfg := &c.cfg
 	meta := cfg.Metadata
 
@@ -87,7 +87,7 @@ func (c *NodeGroup) Create() error {
 		return err
 	}
 
-	if err := checkARMSupport(ctl, clientSet, cfg); err != nil {
+	if err := checkARMSupport(ctl, clientSet, cfg, accountID); err != nil {
 		return err
 	}
 
@@ -105,7 +105,7 @@ func (c *NodeGroup) Create() error {
 		return err
 	}
 
-	nodeGroupService := eks.NewNodeGroupService(cfg, ctl.Provider)
+	nodeGroupService := eks.NewNodeGroupService(cfg, ctl.Provider, accountID)
 	if err := nodeGroupService.Normalize(cmdutils.ToNodePools(cfg)); err != nil {
 		return err
 	}
@@ -155,7 +155,7 @@ func (c *NodeGroup) Create() error {
 			logger.Debug("cluster has withOIDC enabled but is not using IRSA for CNI, will add CNI policy to node role")
 		}
 
-		nodeGroupTasks := stackManager.NewUnmanagedNodeGroupTask(cfg.NodeGroups, supportsManagedNodes, !awsNodeUsesIRSA)
+		nodeGroupTasks := stackManager.NewUnmanagedNodeGroupTask(cfg.NodeGroups, supportsManagedNodes, !awsNodeUsesIRSA, accountID)
 		if nodeGroupTasks.Len() > 0 {
 			allNodeGroupTasks.Append(nodeGroupTasks)
 		}
@@ -293,7 +293,7 @@ func checkVersion(ctl *eks.ClusterProvider, meta *api.ClusterMeta) error {
 	return nil
 }
 
-func checkARMSupport(ctl *eks.ClusterProvider, clientSet kubernetes.Interface, cfg *api.ClusterConfig) error {
+func checkARMSupport(ctl *eks.ClusterProvider, clientSet kubernetes.Interface, cfg *api.ClusterConfig, accountID string) error {
 	rawClient, err := ctl.NewRawClient(cfg)
 	if err != nil {
 		return err
@@ -304,7 +304,7 @@ func checkARMSupport(ctl *eks.ClusterProvider, clientSet kubernetes.Interface, c
 		return err
 	}
 	if api.ClusterHasInstanceType(cfg, utils.IsARMInstanceType) {
-		upToDate, err := defaultaddons.DoAddonsSupportMultiArch(clientSet, rawClient, kubernetesVersion, ctl.Provider.Region())
+		upToDate, err := defaultaddons.DoAddonsSupportMultiArch(clientSet, rawClient, kubernetesVersion, ctl.Provider.Region(), accountID)
 		if err != nil {
 			return err
 		}

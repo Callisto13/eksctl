@@ -9,15 +9,17 @@ import (
 
 // A NodeGroupService provides helpers for nodegroup creation
 type NodeGroupService struct {
-	cluster  *api.ClusterConfig
-	provider api.ClusterProvider
+	cluster   *api.ClusterConfig
+	provider  api.ClusterProvider
+	accountID string
 }
 
 // NewNodeGroupService creates a new NodeGroupService
-func NewNodeGroupService(clusterConfig *api.ClusterConfig, provider api.ClusterProvider) *NodeGroupService {
+func NewNodeGroupService(clusterConfig *api.ClusterConfig, provider api.ClusterProvider, accountID string) *NodeGroupService {
 	return &NodeGroupService{
-		cluster:  clusterConfig,
-		provider: provider,
+		cluster:   clusterConfig,
+		provider:  provider,
+		accountID: accountID,
 	}
 }
 
@@ -28,7 +30,7 @@ func (m *NodeGroupService) Normalize(nodePools []api.NodePool) error {
 		case *api.NodeGroup:
 			// resolve AMI
 			if !api.IsAMI(ng.AMI) {
-				if err := ResolveAMI(m.provider, m.cluster.Metadata.Version, ng); err != nil {
+				if err := ResolveAMI(m.provider, m.cluster.Metadata.Version, m.accountID, ng); err != nil {
 					return err
 				}
 			}

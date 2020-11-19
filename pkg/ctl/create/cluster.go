@@ -265,11 +265,14 @@ func doCreateCluster(cmd *cmdutils.Cmd, ngFilter *filter.NodeGroupFilter, params
 		return nil
 	}
 
-	if err := createOrImportVPC(); err != nil {
+	// CLAUDIA - but may not be used (fetch)
+	// could return from Normalize? no - cannot return the true resolve account
+	// as it will be different per nodegroup based on AMI family
+	accountID, err := api.ResourceAccountID(meta.Region)
+	if err != nil {
 		return err
 	}
-
-	nodeGroupService := eks.NewNodeGroupService(cfg, ctl.Provider)
+	nodeGroupService := eks.NewNodeGroupService(cfg, ctl.Provider, accountID)
 	if err := nodeGroupService.Normalize(cmdutils.ToNodePools(cfg)); err != nil {
 		return err
 	}
@@ -311,8 +314,10 @@ func doCreateCluster(cmd *cmdutils.Cmd, ngFilter *filter.NodeGroupFilter, params
 		if err != nil {
 			return err
 		}
-		postClusterCreationTasks := ctl.CreateExtraClusterConfigTasks(cfg, params.InstallWindowsVPCController)
-		tasks := stackManager.NewTasksToCreateClusterWithNodeGroups(cfg.NodeGroups, cfg.ManagedNodeGroups, supportsManagedNodes, postClusterCreationTasks)
+		// CLAUDIA - will be used
+		postClusterCreationTasks := ctl.CreateExtraClusterConfigTasks(cfg, params.InstallWindowsVPCController, accountID)
+		// CLAUDIA - will be used
+		tasks := stackManager.NewTasksToCreateClusterWithNodeGroups(cfg.NodeGroups, cfg.ManagedNodeGroups, supportsManagedNodes, accountID, postClusterCreationTasks)
 
 		logger.Info(tasks.Describe())
 		if errs := tasks.DoAllSync(); len(errs) > 0 {

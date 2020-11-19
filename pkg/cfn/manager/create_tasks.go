@@ -12,7 +12,7 @@ import (
 // NewTasksToCreateClusterWithNodeGroups defines all tasks required to create a cluster along
 // with some nodegroups; see CreateAllNodeGroups for how onlyNodeGroupSubset works
 func (c *StackCollection) NewTasksToCreateClusterWithNodeGroups(nodeGroups []*api.NodeGroup,
-	managedNodeGroups []*api.ManagedNodeGroup, supportsManagedNodes bool, postClusterCreationTasks ...Task) *TaskTree {
+	managedNodeGroups []*api.ManagedNodeGroup, supportsManagedNodes bool, accountID string, postClusterCreationTasks ...Task) *TaskTree {
 
 	tasks := TaskTree{Parallel: false}
 
@@ -25,7 +25,7 @@ func (c *StackCollection) NewTasksToCreateClusterWithNodeGroups(nodeGroups []*ap
 	)
 
 	appendNodeGroupTasksTo := func(taskTree *TaskTree) {
-		nodeGroupTasks := c.NewUnmanagedNodeGroupTask(nodeGroups, supportsManagedNodes, false)
+		nodeGroupTasks := c.NewUnmanagedNodeGroupTask(nodeGroups, supportsManagedNodes, false, accountID)
 
 		managedNodeGroupTasks := c.NewManagedNodeGroupTask(managedNodeGroups, false)
 		if managedNodeGroupTasks.Len() > 0 {
@@ -54,7 +54,7 @@ func (c *StackCollection) NewTasksToCreateClusterWithNodeGroups(nodeGroups []*ap
 }
 
 // NewUnmanagedNodeGroupTask defines tasks required to create all of the nodegroups
-func (c *StackCollection) NewUnmanagedNodeGroupTask(nodeGroups []*api.NodeGroup, supportsManagedNodes bool, forceAddCNIPolicy bool) *TaskTree {
+func (c *StackCollection) NewUnmanagedNodeGroupTask(nodeGroups []*api.NodeGroup, supportsManagedNodes bool, forceAddCNIPolicy bool, accountID string) *TaskTree {
 	tasks := &TaskTree{Parallel: true}
 
 	for _, ng := range nodeGroups {
@@ -64,6 +64,7 @@ func (c *StackCollection) NewUnmanagedNodeGroupTask(nodeGroups []*api.NodeGroup,
 			stackCollection:      c,
 			supportsManagedNodes: supportsManagedNodes,
 			forceAddCNIPolicy:    forceAddCNIPolicy,
+			accountID:            accountID,
 		})
 		// TODO: move authconfigmap tasks here using kubernetesTask and kubernetes.CallbackClientSet
 	}

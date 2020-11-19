@@ -64,7 +64,7 @@ func DoesAWSNodeSupportMultiArch(rawClient kubernetes.RawClientInterface, region
 
 // UpdateAWSNode will update the `aws-node` add-on and returns true
 // if an update is available.
-func UpdateAWSNode(rawClient kubernetes.RawClientInterface, region string, plan bool) (bool, error) {
+func UpdateAWSNode(rawClient kubernetes.RawClientInterface, region, accountID string, plan bool) (bool, error) {
 	clusterDaemonSet, err := rawClient.ClientSet().AppsV1().DaemonSets(metav1.NamespaceSystem).Get(AWSNode, metav1.GetOptions{})
 	if err != nil {
 		if apierrs.IsNotFound(err) {
@@ -101,7 +101,7 @@ func UpdateAWSNode(rawClient kubernetes.RawClientInterface, region string, plan 
 
 			container.Image = awsNodeImageFormatPrefix + ":" + imageParts[1]
 			initContainer.Image = awsNodeInitImageFormatPrefix + ":" + imageParts[1]
-			if err := addons.UseRegionalImage(&daemonSet.Spec.Template, region); err != nil {
+			if err := addons.UseRegionalImage(&daemonSet.Spec.Template, region, accountID); err != nil {
 				return false, err
 			}
 

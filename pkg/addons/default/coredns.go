@@ -24,7 +24,7 @@ const (
 	KubeDNS = "kube-dns"
 )
 
-func IsCoreDNSUpToDate(rawClient kubernetes.RawClientInterface, region, controlPlaneVersion string) (bool, error) {
+func IsCoreDNSUpToDate(rawClient kubernetes.RawClientInterface, region, controlPlaneVersion, accountID string) (bool, error) {
 	kubeDNSDeployment, err := rawClient.ClientSet().AppsV1().Deployments(metav1.NamespaceSystem).Get(CoreDNS, metav1.GetOptions{})
 	if err != nil {
 		if apierrs.IsNotFound(err) {
@@ -55,7 +55,7 @@ func IsCoreDNSUpToDate(rawClient kubernetes.RawClientInterface, region, controlP
 		if !ok {
 			return false, fmt.Errorf("expected type %T; got %T", &appsv1.Deployment{}, resource.Info.Object)
 		}
-		if err := addons.UseRegionalImage(&deployment.Spec.Template, region); err != nil {
+		if err := addons.UseRegionalImage(&deployment.Spec.Template, region, accountID); err != nil {
 			return false, err
 		}
 		if computeType, ok := kubeDNSDeployment.Spec.Template.Annotations[coredns.ComputeTypeAnnotationKey]; ok {
@@ -75,7 +75,7 @@ func IsCoreDNSUpToDate(rawClient kubernetes.RawClientInterface, region, controlP
 
 // UpdateCoreDNS will update the `coredns` add-on and returns true
 // if an update is available
-func UpdateCoreDNS(rawClient kubernetes.RawClientInterface, region, controlPlaneVersion string, plan bool) (bool, error) {
+func UpdateCoreDNS(rawClient kubernetes.RawClientInterface, region, controlPlaneVersion, accountID string, plan bool) (bool, error) {
 	kubeDNSSevice, err := rawClient.ClientSet().CoreV1().Services(metav1.NamespaceSystem).Get(KubeDNS, metav1.GetOptions{})
 	if err != nil {
 		if apierrs.IsNotFound(err) {
@@ -116,7 +116,7 @@ func UpdateCoreDNS(rawClient kubernetes.RawClientInterface, region, controlPlane
 				return false, fmt.Errorf("expected type %T; got %T", &appsv1.Deployment{}, resource.Info.Object)
 			}
 			template := &deployment.Spec.Template
-			if err := addons.UseRegionalImage(template, region); err != nil {
+			if err := addons.UseRegionalImage(template, region, accountID); err != nil {
 				return false, err
 			}
 			if computeType, ok := kubeDNSDeployment.Spec.Template.Annotations[coredns.ComputeTypeAnnotationKey]; ok {

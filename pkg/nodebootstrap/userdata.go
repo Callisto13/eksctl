@@ -209,12 +209,12 @@ func makeCommonKubeletEnvParams(ng *api.NodeGroup) []string {
 	return variables
 }
 
-func makeMetadata(spec *api.ClusterConfig) []string {
+func makeMetadata(spec *api.ClusterConfig, accountID string) []string {
 	return []string{
 		fmt.Sprintf("AWS_DEFAULT_REGION=%s", spec.Metadata.Region),
 		fmt.Sprintf("AWS_EKS_CLUSTER_NAME=%s", spec.Metadata.Name),
 		fmt.Sprintf("AWS_EKS_ENDPOINT=%s", spec.Status.Endpoint),
-		fmt.Sprintf("AWS_EKS_ECR_ACCOUNT=%s", api.EKSResourceAccountID(spec.Metadata.Region)),
+		fmt.Sprintf("AWS_EKS_ECR_ACCOUNT=%s", accountID),
 	}
 }
 
@@ -227,12 +227,12 @@ func makeMaxPodsMapping() string {
 }
 
 // NewUserData creates new user data for a given node image family
-func NewUserData(spec *api.ClusterConfig, ng *api.NodeGroup) (string, error) {
+func NewUserData(spec *api.ClusterConfig, ng *api.NodeGroup, accountID string) (string, error) {
 	switch ng.AMIFamily {
 	case api.NodeImageFamilyAmazonLinux2:
-		return NewUserDataForAmazonLinux2(spec, ng)
+		return NewUserDataForAmazonLinux2(spec, ng, accountID)
 	case api.NodeImageFamilyUbuntu2004, api.NodeImageFamilyUbuntu1804:
-		return NewUserDataForUbuntu(spec, ng)
+		return NewUserDataForUbuntu(spec, ng, accountID)
 	case api.NodeImageFamilyBottlerocket:
 		return NewUserDataForBottlerocket(spec, ng)
 	default:

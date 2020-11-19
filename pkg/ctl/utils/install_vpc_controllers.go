@@ -61,8 +61,13 @@ func doInstallWindowsVPCController(cmd *cmdutils.Cmd) error {
 	}
 
 	// TODO cmd.Plan doesn't work as intended for all addons
-	vpcController := addons.NewVPCController(rawClient, cfg.Status, ctl.Provider.Region(), cmd.Plan)
+	accountID, err := api.ResourceAccountID(meta.Region)
+	if err != nil {
+		return err
+	}
+	vpcController := addons.NewVPCController(rawClient, cfg.Status, ctl.Provider.Region(), accountID, cmd.Plan)
 
+	// CLAUDIA - will be used (fetch)
 	if err := vpcController.Deploy(); err != nil {
 		return errors.Wrap(err, "error installing VPC controller")
 	}

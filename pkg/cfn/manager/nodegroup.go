@@ -50,10 +50,10 @@ func (c *StackCollection) makeNodeGroupStackName(name string) string {
 }
 
 // createNodeGroupTask creates the nodegroup
-func (c *StackCollection) createNodeGroupTask(errs chan error, ng *api.NodeGroup, supportsManagedNodes, forceAddCNIPolicy bool) error {
+func (c *StackCollection) createNodeGroupTask(errs chan error, ng *api.NodeGroup, supportsManagedNodes, forceAddCNIPolicy bool, accountID string) error {
 	name := c.makeNodeGroupStackName(ng.Name)
 	logger.Info("building nodegroup stack %q", name)
-	stack := builder.NewNodeGroupResourceSet(c.provider, c.spec, c.makeClusterStackName(), ng, supportsManagedNodes, forceAddCNIPolicy)
+	stack := builder.NewNodeGroupResourceSet(c.provider, c.spec, c.makeClusterStackName(), accountID, ng, supportsManagedNodes, forceAddCNIPolicy)
 	if err := stack.AddAllResources(); err != nil {
 		return err
 	}

@@ -10,18 +10,18 @@ import (
 // and if they are not it will update them to the latest version for the given control plane version
 // TODO Delete this function when the multi architecture images are used by default when a new cluster is created. When
 // that happens eksctl won't need to update them before creating ARM nodegroups anymore.
-func EnsureAddonsUpToDate(clientSet kubernetes.Interface, rawClient kubernetes.RawClientInterface, controlPlaneVersion string, region string) error {
+func EnsureAddonsUpToDate(clientSet kubernetes.Interface, rawClient kubernetes.RawClientInterface, controlPlaneVersion, region, accountID string) error {
 	_, err := UpdateKubeProxyImageTag(clientSet, controlPlaneVersion, false)
 	if err != nil {
 		return errors.Wrapf(err, "error updating kube-proxy")
 	}
 
-	_, err = UpdateAWSNode(rawClient, region, false)
+	_, err = UpdateAWSNode(rawClient, region, accountID, false)
 	if err != nil {
 		return errors.Wrapf(err, "error updating aws-node")
 	}
 
-	_, err = UpdateCoreDNS(rawClient, region, controlPlaneVersion, false)
+	_, err = UpdateCoreDNS(rawClient, region, controlPlaneVersion, accountID, false)
 	if err != nil {
 		return errors.Wrapf(err, "error updating coredns")
 	}
@@ -29,7 +29,7 @@ func EnsureAddonsUpToDate(clientSet kubernetes.Interface, rawClient kubernetes.R
 	return nil
 }
 
-func DoAddonsSupportMultiArch(clientSet kubernetes.Interface, rawClient kubernetes.RawClientInterface, controlPlaneVersion string, region string) (bool, error) {
+func DoAddonsSupportMultiArch(clientSet kubernetes.Interface, rawClient kubernetes.RawClientInterface, controlPlaneVersion, accountID, region string) (bool, error) {
 	kubeProxyUpToDate, err := IsKubeProxyUpToDate(clientSet, controlPlaneVersion)
 	if err != nil {
 		return true, err
@@ -46,7 +46,7 @@ func DoAddonsSupportMultiArch(clientSet kubernetes.Interface, rawClient kubernet
 		return false, nil
 	}
 
-	coreDNSUpToDate, err := IsCoreDNSUpToDate(rawClient, region, controlPlaneVersion)
+	coreDNSUpToDate, err := IsCoreDNSUpToDate(rawClient, region, controlPlaneVersion, accountID)
 	if err != nil {
 		return true, err
 	}
