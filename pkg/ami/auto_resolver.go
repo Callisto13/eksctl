@@ -10,14 +10,6 @@ import (
 	"github.com/weaveworks/eksctl/pkg/utils"
 )
 
-const (
-	// ownerIDUbuntuFamily is the owner ID used for Ubuntu AMIs
-	ownerIDUbuntuFamily = "099720109477"
-
-	// ownerIDWindowsFamily is the owner ID used for Ubuntu AMIs
-	ownerIDWindowsFamily = "801119661308"
-)
-
 // MakeImageSearchPatterns creates a map of image search patterns by image OS family and class
 func MakeImageSearchPatterns(version string) map[string]map[int]string {
 	return map[string]map[int]string{
@@ -44,21 +36,6 @@ func MakeImageSearchPatterns(version string) map[string]map[int]string {
 		api.NodeImageFamilyWindowsServer2004CoreContainer: {
 			ImageClassGeneral: fmt.Sprintf("Windows_Server-2004-English-Core-EKS_Optimized-%v-*", version),
 		},
-	}
-}
-
-// OwnerAccountID returns the AWS account ID that owns worker AMI.
-func OwnerAccountID(imageFamily, region string) (string, error) {
-	switch imageFamily {
-	case api.NodeImageFamilyUbuntu2004, api.NodeImageFamilyUbuntu1804:
-		return ownerIDUbuntuFamily, nil
-	case api.NodeImageFamilyAmazonLinux2:
-		return api.EKSResourceAccountID(region), nil
-	default:
-		if api.IsWindowsImage(imageFamily) {
-			return ownerIDWindowsFamily, nil
-		}
-		return "", fmt.Errorf("unable to determine the account owner for image family %s", imageFamily)
 	}
 }
 
@@ -93,7 +70,7 @@ func (r *AutoResolver) Resolve(region, version, instanceType, imageFamily string
 		}
 	}
 
-	ownerAccount, err := OwnerAccountID(imageFamily, region)
+	ownerAccount, err := api.OwnerAccountID(imageFamily, region)
 	if err != nil {
 		logger.Critical("%v", err)
 		return "", NewErrFailedResolution(region, version, instanceType, imageFamily)

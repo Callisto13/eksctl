@@ -257,7 +257,6 @@ func (c *ClusterProvider) GetCredentialsEnv() ([]string, error) {
 
 // CheckAuth checks the AWS authentication
 func (c *ClusterProvider) CheckAuth() error {
-
 	input := &sts.GetCallerIdentityInput{}
 	output, err := c.Provider.STS().GetCallerIdentity(input)
 	if err != nil {

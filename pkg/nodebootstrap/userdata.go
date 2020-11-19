@@ -214,7 +214,7 @@ func makeMetadata(spec *api.ClusterConfig) []string {
 		fmt.Sprintf("AWS_DEFAULT_REGION=%s", spec.Metadata.Region),
 		fmt.Sprintf("AWS_EKS_CLUSTER_NAME=%s", spec.Metadata.Name),
 		fmt.Sprintf("AWS_EKS_ENDPOINT=%s", spec.Status.Endpoint),
-		fmt.Sprintf("AWS_EKS_ECR_ACCOUNT=%s", api.EKSResourceAccountID(spec.Metadata.Region)),
+		fmt.Sprintf("AWS_EKS_ECR_ACCOUNT=%s", api.EKSResourceAccountID),
 	}
 }
 

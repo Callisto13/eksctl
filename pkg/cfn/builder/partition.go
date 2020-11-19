@@ -22,6 +22,16 @@ var servicePrincipalPartitionMappings = map[string]map[string]string{
 		"EKS":            "eks.amazonaws.com",
 		"EKSFargatePods": "eks-fargate-pods.amazonaws.com",
 	},
+	"aws-iso": {
+		"EC2":            "ec2.amazonaws.com.cn",
+		"EKS":            "eks.amazonaws.com",
+		"EKSFargatePods": "eks-fargate-pods.amazonaws.com",
+	},
+	"aws-iso-b": {
+		"EC2":            "ec2.amazonaws.com.cn",
+		"EKS":            "eks.amazonaws.com",
+		"EKSFargatePods": "eks-fargate-pods.amazonaws.com",
+	},
 }
 
 const servicePrincipalPartitionMapName = "ServicePrincipalPartitionMap"

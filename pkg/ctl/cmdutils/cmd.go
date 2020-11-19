@@ -2,6 +2,7 @@ package cmdutils
 
 import (
 	"github.com/kris-nova/logger"
+	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 
 	api "github.com/weaveworks/eksctl/pkg/apis/eksctl.io/v1alpha5"
@@ -37,6 +38,10 @@ func (c *Cmd) NewCtl() (*eks.ClusterProvider, error) {
 			return nil, err
 		}
 		logger.Warning("ignoring validation error: %s", err.Error())
+	}
+
+	if err := api.SetEKSResourceAccount(&c.ClusterConfig.Metadata.Region); err != nil {
+		return nil, errors.Wrap(err, "couldn't set EKS resource account")
 	}
 
 	for i, ng := range c.ClusterConfig.NodeGroups {
