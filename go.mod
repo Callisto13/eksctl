@@ -51,16 +51,16 @@ require (
 	github.com/weaveworks/launcher v0.0.2-0.20200715141516-1ca323f1de15
 	github.com/whilp/git-urls v0.0.0-20191001220047-6db9661140c0
 	golang.org/x/tools v0.0.0-20201023174141-c8cfbd0f21e6
-	k8s.io/api v0.16.8
-	k8s.io/apiextensions-apiserver v0.16.8
-	k8s.io/apimachinery v0.16.8
-	k8s.io/cli-runtime v0.16.8
+	k8s.io/api v0.18.6
+	k8s.io/apiextensions-apiserver v0.18.0
+	k8s.io/apimachinery v0.18.6
+	k8s.io/cli-runtime v0.18.6
 	k8s.io/client-go v11.0.0+incompatible
 	k8s.io/cloud-provider v0.16.8
 	k8s.io/code-generator v0.16.8
-	k8s.io/kops v1.15.2
+	k8s.io/kops v1.18.2
 	k8s.io/kubelet v0.16.8
-	k8s.io/kubernetes v1.16.8
+	k8s.io/kubernetes v1.17.0
 	k8s.io/legacy-cloud-providers v0.16.8
 	sigs.k8s.io/aws-iam-authenticator v0.5.2
 	sigs.k8s.io/yaml v1.2.0
