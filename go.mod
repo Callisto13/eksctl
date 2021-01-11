@@ -52,7 +52,7 @@ require (
 	github.com/whilp/git-urls v0.0.0-20191001220047-6db9661140c0
 	golang.org/x/tools v0.0.0-20201023174141-c8cfbd0f21e6
 	k8s.io/api v0.16.8
-	k8s.io/apiextensions-apiserver v0.16.8
+	k8s.io/apiextensions-apiserver v0.20.1
 	k8s.io/apimachinery v0.16.8
 	k8s.io/cli-runtime v0.16.8
 	k8s.io/client-go v11.0.0+incompatible
