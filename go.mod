@@ -50,7 +50,7 @@ require (
 	github.com/weaveworks/launcher v0.0.2-0.20200715141516-1ca323f1de15
 	github.com/whilp/git-urls v0.0.0-20191001220047-6db9661140c0
 	golang.org/x/tools v0.0.0-20210105210202-9ed45478a130
-	k8s.io/api v0.19.4
+	k8s.io/api v0.20.4
 	k8s.io/apiextensions-apiserver v0.19.4
 	k8s.io/apimachinery v0.19.4
 	k8s.io/cli-runtime v0.19.4
@@ -62,7 +62,7 @@ require (
 	k8s.io/kubernetes v1.19.4
 	k8s.io/legacy-cloud-providers v0.19.4
 	sigs.k8s.io/aws-iam-authenticator v0.5.2
-	sigs.k8s.io/mdtoc v1.0.1 // indirect
+	sigs.k8s.io/mdtoc v1.0.1
 	sigs.k8s.io/yaml v1.2.0
 )
 
