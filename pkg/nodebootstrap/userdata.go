@@ -6,6 +6,7 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/aws/aws-sdk-go/service/ec2/ec2iface"
 	"github.com/pkg/errors"
 	"k8s.io/client-go/tools/clientcmd"
 	kubeletapi "k8s.io/kubelet/config/v1beta1"
@@ -233,10 +234,10 @@ func makeMaxPodsMapping() string {
 }
 
 // NewUserData creates new user data for a given node image family
-func NewUserData(spec *api.ClusterConfig, ng *api.NodeGroup) (string, error) {
+func NewUserData(spec *api.ClusterConfig, ng *api.NodeGroup, ec2API ec2iface.EC2API) (string, error) {
 	switch ng.AMIFamily {
 	case api.NodeImageFamilyAmazonLinux2:
-		return NewUserDataForAmazonLinux2(spec, ng)
+		return NewUserDataForAmazonLinux2(spec, ng, ec2API)
 	case api.NodeImageFamilyUbuntu2004, api.NodeImageFamilyUbuntu1804:
 		return NewUserDataForUbuntu(spec, ng)
 	case api.NodeImageFamilyBottlerocket:

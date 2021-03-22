@@ -9,5 +9,13 @@
     "max-file": "10"
   },
   "live-restore": true,
-  "max-concurrent-downloads": 10
+  "max-concurrent-downloads": 10,
+  "default-ulimits": {
+    "memlock": {
+      "Hard": -1,
+      "Name": "memlock",
+      "Soft": -1
+    }
+  }
 }
+

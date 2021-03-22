@@ -67,7 +67,7 @@ func (n *NodeGroupResourceSet) AddAllResources() error {
 
 	n.vpc = n.vpcImporter.VPC()
 
-	userData, err := nodebootstrap.NewUserData(n.clusterSpec, n.spec)
+	userData, err := nodebootstrap.NewUserData(n.clusterSpec, n.spec, n.ec2API)
 	if err != nil {
 		return err
 	}

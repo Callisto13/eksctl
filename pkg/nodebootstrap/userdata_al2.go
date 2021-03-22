@@ -3,6 +3,7 @@ package nodebootstrap
 import (
 	"strings"
 
+	"github.com/aws/aws-sdk-go/service/ec2/ec2iface"
 	"github.com/kris-nova/logger"
 	"github.com/pkg/errors"
 	api "github.com/weaveworks/eksctl/pkg/apis/eksctl.io/v1alpha5"
@@ -11,7 +12,7 @@ import (
 	"github.com/weaveworks/eksctl/pkg/utils/kubeconfig"
 )
 
-func makeAmazonLinux2Config(spec *api.ClusterConfig, ng *api.NodeGroup) ([]configFile, error) {
+func makeAmazonLinux2Config(spec *api.ClusterConfig, ng *api.NodeGroup, isNewGPUAMI bool) ([]configFile, error) {
 	clientConfigData, err := makeClientConfigData(spec, kubeconfig.AWSEKSAuthenticator)
 	if err != nil {
 		return nil, err
@@ -56,7 +57,7 @@ func makeAmazonLinux2Config(spec *api.ClusterConfig, ng *api.NodeGroup) ([]confi
 		contents: makeMaxPodsMapping(),
 	}}
 
-	if !utils.IsGPUInstanceType(ng.InstanceType) {
+	if !utils.IsGPUInstanceType(ng.InstanceType) || isNewGPUAMI {
 		dockerConfigData, err := makeDockerConfigJSON()
 		if err != nil {
 			return nil, err
@@ -69,10 +70,19 @@ func makeAmazonLinux2Config(spec *api.ClusterConfig, ng *api.NodeGroup) ([]confi
 }
 
 // NewUserDataForAmazonLinux2 creates new user data for Amazon Linux 2 nodes
-func NewUserDataForAmazonLinux2(spec *api.ClusterConfig, ng *api.NodeGroup) (string, error) {
+func NewUserDataForAmazonLinux2(spec *api.ClusterConfig, ng *api.NodeGroup, ec2API ec2iface.EC2API) (string, error) {
 	config := cloudconfig.New()
 
-	files, err := makeAmazonLinux2Config(spec, ng)
+	var isNewGPUAMI bool
+	if utils.IsGPUInstanceType(ng.InstanceType) {
+		var err error
+		isNewGPUAMI, err = IsNewGPUAMI(ec2API, ng.AMI)
+		if err != nil {
+			return "", err
+		}
+	}
+
+	files, err := makeAmazonLinux2Config(spec, ng, isNewGPUAMI)
 	if err != nil {
 		return "", err
 	}
@@ -87,12 +97,12 @@ func NewUserDataForAmazonLinux2(spec *api.ClusterConfig, ng *api.NodeGroup) (str
 	// override file used instead. We can alter the daemon command by adding
 	// to the OPTIONS var in /etc/sysconfig/docker
 	overrideInsert := "sed -i 's/^OPTIONS=\"/&--exec-opt native.cgroupdriver=systemd /' /etc/sysconfig/docker"
-	if utils.IsGPUInstanceType(ng.InstanceType) {
+	if utils.IsGPUInstanceType(ng.InstanceType) && !isNewGPUAMI {
 		config.AddShellCommand(overrideInsert)
 	}
 	if api.HasMixedInstances(ng) {
 		for _, it := range ng.InstancesDistribution.InstanceTypes {
-			if utils.IsGPUInstanceType(it) {
+			if utils.IsGPUInstanceType(it) && !isNewGPUAMI {
 				config.AddShellCommand(overrideInsert)
 			}
 		}
