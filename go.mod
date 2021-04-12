@@ -54,7 +54,7 @@ require (
 	k8s.io/apiextensions-apiserver v0.19.4
 	k8s.io/apimachinery v0.19.4
 	k8s.io/cli-runtime v0.19.4
-	k8s.io/client-go v0.19.4
+	k8s.io/client-go v0.21.0
 	k8s.io/cloud-provider v0.19.4
 	k8s.io/code-generator v0.19.4
 	k8s.io/kops v1.19.0-beta.2
@@ -62,7 +62,7 @@ require (
 	k8s.io/kubernetes v1.19.4
 	k8s.io/legacy-cloud-providers v0.19.4
 	sigs.k8s.io/aws-iam-authenticator v0.5.2
-	sigs.k8s.io/mdtoc v1.0.1 // indirect
+	sigs.k8s.io/mdtoc v1.0.1
 	sigs.k8s.io/yaml v1.2.0
 )
 
