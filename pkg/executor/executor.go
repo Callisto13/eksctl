@@ -10,6 +10,7 @@ import (
 //go:generate counterfeiter -o fakes/fake_executor.go . Executor
 type Executor interface {
 	Exec(command string, args ...string) error
+	ExecWithOut(command string, args ...string) ([]byte, error)
 	ExecInDir(command string, dir string, args ...string) error
 }
 
@@ -30,6 +31,11 @@ func NewShellExecutor(envVars EnvVars) Executor {
 // Exec execute the command with the specified args
 func (e ShellExecutor) Exec(command string, args ...string) error {
 	return e.buildCmd(command, args...).Run()
+}
+
+// Exec execute the command with the specified args
+func (e ShellExecutor) ExecWithOut(command string, args ...string) ([]byte, error) {
+	return e.buildCmd(command, args...).Output()
 }
 
 // Exec execute the command inside the directory with the specified args
